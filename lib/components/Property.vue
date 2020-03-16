@@ -358,7 +358,7 @@
           </v-chip>
           <v-tooltip top>
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" v-if="fullSchema.valid === 'valid'"
+              <v-chip v-on="on" v-if="isValid"
                 class="ma-2"
                 color="green darken-2"
                 text-color="white">
@@ -369,14 +369,14 @@
           </v-tooltip>
           <v-tooltip top max-width=500>
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" v-if="fullSchema.valid === 'invalid'"
+              <v-chip v-on="on" v-if="!isValid"
                 class="ma-2"
                 color="red darken-2"
                 text-color="white">
                 <span>invalid</span>
               </v-chip>
             </template>
-            <span v-html="fullSchema.error"></span>
+            <span v-html="jsonError"></span>
           </v-tooltip>
           <v-icon @click="downloadFile">mdi-download-outline</v-icon>
           <v-icon @click="viewFile">mdi-open-in-new</v-icon>
@@ -799,6 +799,36 @@ export default {
     }
   },
   computed: {
+    isValid() {
+      if(this.fullSchema.contentMediaType === 'application/json') {
+        if(this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && this.fullSchema.validation.hasOwnProperty('type')) {
+          const ajv = new Ajv({allErrors: true})
+          const validate = ajv.compile(this.fullSchema.validation)
+          const isValid = validate(JSON.parse(this.modelWrapper[this.modelKey]))
+          return isValid
+        }
+      }
+    },
+    jsonError() {
+      if(this.fullSchema.contentMediaType === 'application/json') {
+        if(this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && this.fullSchema.validation.hasOwnProperty('type')) {
+          const ajv = new Ajv({allErrors: true})
+          const validate = ajv.compile(this.fullSchema.validation)
+          const isValid = validate(JSON.parse(this.modelWrapper[this.modelKey]))
+          if(isValid) { 
+            return undefined
+          } else {
+            let msg = ''
+            let nMsg = 1
+            for(const err in validate.errors) {
+              msg = msg +nMsg+' - ' +JSON.stringify(validate.errors[err].schemaPath) + JSON.stringify(validate.errors[err].message) + '<br>'
+              nMsg++
+            }
+            return msg
+          }
+        }
+      }
+    },
     fullSchema() {
       return schemaUtils.prepareFullSchema(this.schema, this.modelWrapper, this.modelKey)
     },
@@ -926,23 +956,8 @@ export default {
         reader.onload = (e) => {
           this.modelWrapper[this.modelKey] = e.target.result
           if(this.fullSchema.contentMediaType === 'application/json') {
-            // contentMediaType accordign to: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
             if(this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && this.fullSchema.validation.hasOwnProperty('type')) {
               this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: JSON.parse(this.modelWrapper[this.modelKey]), validate: true })
-              const ajv = new Ajv({allErrors: true})
-              const validate = ajv.compile(this.fullSchema.validation)
-              const isValid = validate(JSON.parse(this.modelWrapper[this.modelKey]))
-              if(isValid) { this.fullSchema.valid = 'valid'}
-              else {
-                this.fullSchema.valid = 'invalid';
-                let msg = ''
-                let nMsg = 1
-                for(const err in validate.errors) {
-                  msg = msg +nMsg+' - ' +JSON.stringify(validate.errors[err].schemaPath) + JSON.stringify(validate.errors[err].message) + '<br>'
-                  nMsg++
-                }
-                this.fullSchema.error = msg
-              }
             } else { this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: JSON.parse(this.modelWrapper[this.modelKey]), validate: false })}
           } else {
             this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: this.modelWrapper[this.modelKey] })

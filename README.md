@@ -11,6 +11,11 @@ Compatible with vuetify 1 and 2. Check this [alternative demo](https://koumoul-d
 ### JSON Schema standard
 [https://json-schema.org/draft/2019-09/json-schema-validation.html](https://json-schema.org/draft/2019-09/json-schema-validation.html)
 
+File contentMediaType:
+
+accordign to: [https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
+
+
 ## Installation
 
 ```bash
