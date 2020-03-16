@@ -84,19 +84,93 @@ This description can be a long text with markdown content.
       fileUploadCSV: {
         description: 'upload file csv',
         type: 'file',
-        fileType: '.csv'
+        contentMediaType: 'text/csv'
       },
       JSON_measurement: {
         title: 'Upload the measurement (JSON)',
         description: 'upload pdf file',
         type: 'file',
-        fileType: '.json'
+        contentMediaType: 'application/json'
       },
       JSON_2: {
         title: 'Upload the measurement (JSON)',
         description: 'upload pdf file',
         type: 'file',
-        fileType: '.json'
+        contentMediaType: 'application/json',
+        validation: {}
+      },
+      JSON_3: {
+        version: '7.0.0',
+        title: 'Upload the measurement (JSON)',
+        description: 'upload pdf file',
+        type: 'file',
+        contentMediaType: 'application/json',
+        validation: {
+          "type" : "object",
+          "properties" : {
+            "iam": {
+              "type":"object",
+              "properties": {
+              "hfRe": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+              },
+              "hfIm": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+              },
+              "lfRe": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1e-14
+              },
+              "lfIm": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+              }
+            }
+            }
+          }
+        }
+      },
+      JSON_4: {
+        title: 'Upload the measurement (JSON)',
+        description: 'upload pdf file',
+        type: 'file',
+        contentMediaType: 'application/json',
+        validation: {
+          "type" : "object",
+          "properties" : {
+            "iam": {
+              "type":"object",
+              "properties": {
+              "hfRe": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+              },
+              "hfIm": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+              },
+              "lfRe": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1e-14
+              },
+              "lfIm": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+              }
+            }
+            }
+          }
+        }
       }
     }
   },
