@@ -358,7 +358,7 @@
           </v-chip>
           <v-tooltip top>
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" v-if="isValid"
+              <v-chip v-on="on" v-if="isValid && fullSchema.validation"
                 class="ma-2"
                 color="green darken-2"
                 text-color="white">
@@ -369,7 +369,7 @@
           </v-tooltip>
           <v-tooltip top max-width=500>
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" v-if="!isValid"
+              <v-chip v-on="on" v-if="!isValid && fullSchema.validation"
                 class="ma-2"
                 color="red darken-2"
                 text-color="white">
@@ -380,6 +380,21 @@
           </v-tooltip>
           <v-icon @click="downloadFile">mdi-download-outline</v-icon>
           <v-icon @click="viewFile">mdi-open-in-new</v-icon>
+          <v-data-table v-if="fullSchema.displayTable"
+            dense
+            :headers="headers"
+            :items="measurementErrors"
+            :items-per-page="5"
+            class="elevation-1">
+            <template v-if="fullSchema.validation === null || fullSchema.validation === undefined" v-slot:item.value="{ item }">
+              <v-chip
+                :color="getColor(item)"
+                class="ma-2"
+                outlined>
+                <span style="font-weight:bold;">{{ item.value }}</span>
+              </v-chip>
+            </template>
+          </v-data-table>
         </div>
         <div v-else class="file-upload-form">
           <span v-if="fullSchema.title">{{fullSchema.title}}</span><span v-else>Upload file:</span>
@@ -773,6 +788,52 @@ import selectUtils from '../utils/select'
 const matchAll = require('match-all')
 const md = require('markdown-it')()
 
+Object.byString = function(o, s) {
+    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+    s = s.replace(/^\./, '');           // strip a leading dot
+    var a = s.split('.');
+    for (var i = 0, n = a.length; i < n; ++i) {
+        var k = a[i];
+        if (k in o) {
+            o = o[k];
+        } else {
+            return;
+        }
+    }
+    return o;
+}
+
+Object.bySchemaString = function(o, s) {
+    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+    s = s.replace(/^\./, '');           // strip a leading dot
+    var a = s.split('.');
+    for (var i = 0, n = a.length; i < n; ++i) {
+        var k = a[i];
+        if (k in o) {
+            o = o.properties[k];
+        } else {
+            return;
+        }
+    }
+    return o;
+}
+
+String.toSchemaString = function(s) {
+  return s.split('.').join('.properties.')
+}
+
+ function buildTableRecord(dP,validation,inputData,message) {
+  let minStr = String.toSchemaString(dP) +'.minimum'
+  let maxStr = String.toSchemaString(dP)+'.maximum'
+  return {
+    name: dP.split('.').join(' '),
+    min: Object.byString(validation,minStr),
+    value: Object.byString(inputData,dP).toFixed(5),
+    max: Object.byString(validation,maxStr),
+    details: JSON.stringify(message)
+  }
+}
+
 export default {
   name: 'Property',
   components: { SelectIcon, SelectItem, Tooltip },
@@ -795,7 +856,20 @@ export default {
       oldFlat: `
         background-color: none !important;
         border-color: none !important;
-        `
+        `,
+      headers: [
+        {
+          text: 'Property name',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Lower bound', value: 'min' },
+        { text: 'Measured value', value: 'value' },
+        { text: 'Upper bound', value: 'max' },
+        { text: 'Details', value: 'details' },
+      ],
+      measurementErrors: [],
     }
   },
   computed: {
@@ -815,16 +889,39 @@ export default {
           const ajv = new Ajv({allErrors: true})
           const validate = ajv.compile(this.fullSchema.validation)
           const isValid = validate(JSON.parse(this.modelWrapper[this.modelKey]))
+          const inputData = JSON.parse(this.modelWrapper[this.modelKey])
           if(isValid) { 
             return undefined
           } else {
             let msg = ''
             let nMsg = 1
             for(const err in validate.errors) {
+              let dP = validate.errors[err].dataPath
+              // console.log('row:', dP.split('.').join(' '))//validate.errors[err].datapath.split('.').join(' '))
+              // let minStr = String.toSchemaString(dP) +'.minimum'
+              // let maxStr = String.toSchemaString(dP)+'.maximum'
+              // console.log('min: ', Object.byString(this.fullSchema.validation,minStr))
+              // console.log('path:', validate.errors[err].dataPath)
+              // console.log('max: ', Object.byString(this.fullSchema.validation,maxStr))
+              // console.log('details: ', JSON.stringify(validate.errors[err].message))
+              this.measurementErrors.push(buildTableRecord(dP,this.fullSchema.validation,inputData,validate.errors[err].message))
               msg = msg +nMsg+' - ' +JSON.stringify(validate.errors[err].schemaPath) + JSON.stringify(validate.errors[err].message) + '<br>'
               nMsg++
             }
             return msg
+          }
+        }
+        if(this.fullSchema.displayTable !== null && this.fullSchema.displayTable !== undefined && this.fullSchema.displayTable.hasOwnProperty('validation')) {
+          // parse the validation object
+          for(let row in this.fullSchema.displayTable.validation) {
+            let curRec = this.fullSchema.displayTable.validation[row];
+            let dP = curRec.path
+            this.measurementErrors.push({
+              name: row,
+              min: curRec.rules.minimum,
+              max: curRec.rules.maximum,
+              value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]),dP).toFixed(5)
+            })
           }
         }
       }
@@ -936,6 +1033,13 @@ export default {
     }
   },
   methods: {
+    getColor(tableRecord) {
+      if(tableRecord.value > tableRecord.max || tableRecord.value < tableRecord.min) {
+        return 'red'
+      } else {
+        return "#81c784"
+      }
+    },
     downloadFile(event){
       const durl = window.URL.createObjectURL(new Blob([this.modelWrapper[this.modelKey]]));
       const link = document.createElement('a');
