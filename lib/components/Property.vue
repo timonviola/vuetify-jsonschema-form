@@ -392,11 +392,27 @@
           <v-icon @click="viewFile">
             mdi-open-in-new
           </v-icon>
+          <v-container
+            v-if="displayTableError"
+            fluid
+            class="pa-0 ma-0"
+          >
+            <v-chip
+              color="#9b0000"
+              outlined
+              style="width: 100%;"
+            >
+              <v-icon color="yellow darken-2">
+                mdi-alert
+              </v-icon>
+              <span style="font-weight:bold;display:flex;width:100%;align-content:end;">Error parsing: {{ displayTableError }}</span>
+            </v-chip>
+          </v-container>
           <v-data-table
             v-if="fullSchema.displayTable"
             dense
             :headers="headers"
-            :items="measurementErrors"
+            :items="tableContents"
             :items-per-page="5"
             class="elevation-1"
           >
@@ -815,7 +831,7 @@ Object.byString = function(o, s) {
     if (k in o) {
       o = o[k]
     } else {
-      return
+      throw Error('Could not resolve path.')
     }
   }
   return o
@@ -872,7 +888,8 @@ export default {
         { text: 'Upper bound', value: 'max' },
         { text: 'Details', value: 'details' }
       ],
-      measurementErrors: []
+      measurementErrors: [],
+      displayTableError: null
     }
   },
   computed: {
@@ -889,6 +906,30 @@ export default {
       } else {
         return undefined
       }
+    },
+    tableContents() {
+      if (this.fullSchema.contentMediaType !== 'application/json') {
+        return []
+      }
+      if (this.fullSchema.displayTable === null || this.fullSchema.displayTable === undefined || !Object.prototype.hasOwnProperty.call(this.fullSchema.displayTable, 'validation')) {
+        return []
+      }
+      const tArr = []
+      for (const row in this.fullSchema.displayTable.validation) {
+        const curRec = this.fullSchema.displayTable.validation[row]
+        const dP = curRec.path
+        try {
+          tArr.push({
+            name: row,
+            min: curRec.rules.minimum,
+            max: curRec.rules.maximum,
+            value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]), dP).toFixed(5)
+          })
+        } catch (e) {
+          this.displayTableError = row + ' ' + curRec.path
+        }
+      }
+      return tArr
     },
     jsonError() {
       if (this.fullSchema.contentMediaType === 'application/json') {
@@ -909,18 +950,6 @@ export default {
               nMsg++
             }
             return msg
-          }
-        } else if (this.fullSchema.displayTable !== null && this.fullSchema.displayTable !== undefined && Object.prototype.hasOwnProperty.call(this.fullSchema.displayTable, 'validation')) {
-          // parse the validation object
-          for (const row in this.fullSchema.displayTable.validation) {
-            const curRec = this.fullSchema.displayTable.validation[row]
-            const dP = curRec.path
-            this.measurementErrors.push({
-              name: row,
-              min: curRec.rules.minimum,
-              max: curRec.rules.maximum,
-              value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]), dP).toFixed(5)
-            })
           }
         }
       }
@@ -1068,6 +1097,13 @@ export default {
           }
         }
         reader.readAsText(input.files[0])
+      }
+      console.log('updateselectItems')
+      if (Object.prototype.hasOwnProperty.call(this.fullSchema, 'displayTable')) {
+        // reset table contents to empty
+        console.log('this.measurementErrors', this.measurementErrors)
+        this.measurementErrors.length = 0
+        console.log('this.measurementErrors reset:', this.measurementErrors)
       }
     },
     changeImage(event) {

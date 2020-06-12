@@ -231,7 +231,7 @@ This description can be a long text with markdown content.
                   }
                 },
                 'SNR LF': {
-                  path: '.analysis.snr.lf',
+                  path: '.analysis.snr.lf.cica',
                   rules: {
                     maximum: 1000000,
                     minimum: 30
