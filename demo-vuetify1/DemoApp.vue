@@ -54,7 +54,7 @@
                 @error="e => window.alert(e)"
                 @change="change"
                 @input="input"
-                v-on:json-upload="console.log('jsonupload')"
+                @json-upload="console.log('jsonupload')"
               >
                 <template v-slot:prepend-fullKeySlot="{fullSchema}">
                   Prepend slot<br>

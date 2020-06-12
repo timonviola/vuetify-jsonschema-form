@@ -208,6 +208,119 @@ This description can be a long text with markdown content.
       //     }
       //   }
       // },
+      qctemplate: {
+        type: 'object',
+        properties: {
+          'Test device': {
+            type: 'string',
+            minLength: 2,
+            maxLength: 20
+          },
+          MeasurementFile: {
+            title: 'Upload the measurement (JSON)',
+            description: 'Upload measurement .JSON file from LAB.',
+            type: 'file',
+            contentMediaType: 'application/json',
+            displayTable: {
+              validation: {
+                'SNR HF': {
+                  path: '.analysis.snr.hf',
+                  rules: {
+                    maximum: 1000000,
+                    minimum: 22
+                  }
+                },
+                'SNR LF': {
+                  path: '.analysis.snr.lf',
+                  rules: {
+                    maximum: 1000000,
+                    minimum: 30
+                  }
+                },
+                'Average concentration': {
+                  path: '.analysis.concentration.sampleVolume.bacteria',
+                  rules: {
+                    maximum: 1633000,
+                    minimum: 1207000
+                  }
+                },
+                'bacteria count': {
+                  path: '.algResult.transitionFits.count.bacteria',
+                  rules: {
+                    maximum: 5,
+                    minimum: 0
+                  }
+                },
+                'transition time': {
+                  path: '.algResult.transitionFits.transitionTime.iam',
+                  rules: {
+                    maximum: 1,
+                    minimum: 0,
+                    type: [
+                      'float'
+                    ]
+                  }
+                },
+                ADC: {
+                  path: '.irregularities.adcMax.ratio',
+                  rules: {
+                    maximum: 1,
+                    minimum: 0.05,
+                    type: [
+                      'float'
+                    ]
+                  }
+                },
+                LF_RE: {
+                  path: '.algResult.noises.iam.lfRe',
+                  rules: {
+                    maximum: 165,
+                    minimum: -1000000,
+                    type: [
+                      'float'
+                    ]
+                  }
+                },
+                LF_IM: {
+                  path: '.algResult.noises.iam.lfIm',
+                  rules: {
+                    maximum: 130,
+                    minimum: -1000000,
+                    type: [
+                      'float'
+                    ]
+                  }
+                },
+                HF_RE: {
+                  path: '.algResult.noises.iam.hfRe',
+                  rules: {
+                    maximum: 155,
+                    minimum: -1000000,
+                    type: [
+                      'float'
+                    ]
+                  }
+                }
+              },
+              HF_IM: {
+                path: '.algResult.noises.iam.hfIm',
+                rules: {
+                  maximum: 165,
+                  minimum: -1000000,
+                  type: [
+                    'float'
+                  ]
+                }
+              }
+            }
+          },
+          'Additional comments': {
+            description: 'A longer text for additional comments.',
+            type: 'string',
+            maxLength: 2000
+          }
+        }
+      },
       new_custom_json: {
         title: 'Upload the6measurement (JSON)',
         description: 'UPLOAD FILE',

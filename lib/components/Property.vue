@@ -320,22 +320,22 @@
         <tooltip slot="append-outer" :options="options" :html-description="htmlDescription" />
       </v-text-field>
 
-       <!-- Simple image field -->
+      <!-- Simple image field -->
       <div v-else-if="fullSchema.type === 'image'">
         <div class="file-upload-form">
-            <span v-if="fullSchema.title">{{fullSchema.title}}</span><span v-else>Upload an image file:</span>
-            <input
-              type="file"
-              @change="changeImage"
-              accept="image/*">
-            <tooltip slot="append-outer" :options="options" :html-description="htmlDescription" />
+          <span v-if="fullSchema.title">{{ fullSchema.title }}</span><span v-else>Upload an image file:</span>
+          <input
+            type="file"
+            accept="image/*"
+            @change="changeImage"
+          >
+          <tooltip slot="append-outer" :options="options" :html-description="htmlDescription" />
         </div>
         <div v-if="modelWrapper[modelKey] !== 'null' && modelWrapper[modelKey] !== null && modelWrapper[modelKey] !== undefined" class="image-preview">
-         <v-img
+          <v-img
             :src="modelWrapper[modelKey]"
             :name="fullKey"
-          >
-          </v-img>
+          />
         </div>
       </div>
 
@@ -344,13 +344,15 @@
         <div v-if="modelWrapper[modelKey] !== 'null' && modelWrapper[modelKey] !== null && modelWrapper[modelKey] !== undefined" class="json-preview">
           <input
             type="file"
+            :accept="fullSchema.contentMediaType"
             @change="changeFile"
-            :accept="fullSchema.contentMediaType">
+          >
           <tooltip slot="append-outer" :options="options" :html-description="htmlDescription" />
           <v-chip
             class="ma-2"
             color="#81c784"
-            outlined>
+            outlined
+          >
             <v-avatar left>
               <v-icon>mdi-checkbox-marked-circle</v-icon>
             </v-avatar>
@@ -358,50 +360,66 @@
           </v-chip>
           <v-tooltip top>
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" v-if="isValid && fullSchema.validation"
+              <v-chip
+                v-if="isValid && fullSchema.validation"
                 class="ma-2"
                 color="green darken-2"
-                text-color="white">
+                text-color="white"
+                v-on="on"
+              >
                 <span>valid</span>
               </v-chip>
             </template>
             <span>File value passed.</span>
           </v-tooltip>
-          <v-tooltip top max-width=500>
+          <v-tooltip top max-width="500">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" v-if="!isValid && fullSchema.validation"
+              <v-chip
+                v-if="!isValid && fullSchema.validation"
                 class="ma-2"
                 color="red darken-2"
-                text-color="white">
+                text-color="white"
+                v-on="on"
+              >
                 <span>invalid</span>
               </v-chip>
             </template>
-            <span v-html="jsonError"></span>
+            <span v-html="jsonError" />
           </v-tooltip>
-          <v-icon @click="downloadFile">mdi-download-outline</v-icon>
-          <v-icon @click="viewFile">mdi-open-in-new</v-icon>
-          <v-data-table v-if="fullSchema.displayTable"
+          <v-icon @click="downloadFile">
+            mdi-download-outline
+          </v-icon>
+          <v-icon @click="viewFile">
+            mdi-open-in-new
+          </v-icon>
+          <v-data-table
+            v-if="fullSchema.displayTable"
             dense
             :headers="headers"
             :items="measurementErrors"
             :items-per-page="5"
-            class="elevation-1">
-            <template v-if="fullSchema.validation === null || fullSchema.validation === undefined" v-slot:item.value="{ item }">
+            class="elevation-1"
+          >
+            <template
+              v-if="fullSchema.validation === null || fullSchema.validation === undefined" v-slot:item.value="{ item }"
+            >
               <v-chip
                 :color="getColor(item)"
                 class="ma-2"
-                outlined>
+                outlined
+              >
                 <span style="font-weight:bold;">{{ item.value }}</span>
               </v-chip>
             </template>
           </v-data-table>
         </div>
         <div v-else class="file-upload-form">
-          <span v-if="fullSchema.title">{{fullSchema.title}}</span><span v-else>Upload file:</span>
+          <span v-if="fullSchema.title">{{ fullSchema.title }}</span><span v-else>Upload file:</span>
           <input
             type="file"
+            :accept="fullSchema.contentMediaType"
             @change="changeFile"
-            :accept="fullSchema.contentMediaType">
+          >
           <tooltip slot="append-outer" :options="options" :html-description="htmlDescription" />
         </div>
       </div>
