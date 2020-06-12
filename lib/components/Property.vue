@@ -789,47 +789,32 @@ const matchAll = require('match-all')
 const md = require('markdown-it')()
 
 Object.byString = function(o, s) {
-    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-    s = s.replace(/^\./, '');           // strip a leading dot
-    var a = s.split('.');
-    for (var i = 0, n = a.length; i < n; ++i) {
-        var k = a[i];
-        if (k in o) {
-            o = o[k];
-        } else {
-            return;
-        }
+  s = s.replace(/\[(\w+)\]/g, '.$1') // convert indexes to properties
+  s = s.replace(/^\./, '') // strip a leading dot
+  var a = s.split('.')
+  for (var i = 0, n = a.length; i < n; ++i) {
+    var k = a[i]
+    if (k in o) {
+      o = o[k]
+    } else {
+      return
     }
-    return o;
-}
-
-Object.bySchemaString = function(o, s) {
-    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-    s = s.replace(/^\./, '');           // strip a leading dot
-    var a = s.split('.');
-    for (var i = 0, n = a.length; i < n; ++i) {
-        var k = a[i];
-        if (k in o) {
-            o = o.properties[k];
-        } else {
-            return;
-        }
-    }
-    return o;
+  }
+  return o
 }
 
 String.toSchemaString = function(s) {
   return s.split('.').join('.properties.')
 }
 
- function buildTableRecord(dP,validation,inputData,message) {
-  let minStr = String.toSchemaString(dP) +'.minimum'
-  let maxStr = String.toSchemaString(dP)+'.maximum'
+function buildTableRecord(dP, validation, inputData, message) {
+  const minStr = String.toSchemaString(dP) + '.minimum'
+  const maxStr = String.toSchemaString(dP) + '.maximum'
   return {
     name: dP.split('.').join(' '),
-    min: Object.byString(validation,minStr),
-    value: Object.byString(inputData,dP).toFixed(5),
-    max: Object.byString(validation,maxStr),
+    min: Object.byString(validation, minStr),
+    value: Object.byString(inputData, dP).toFixed(5),
+    max: Object.byString(validation, maxStr),
     details: JSON.stringify(message)
   }
 }
@@ -862,69 +847,66 @@ export default {
           text: 'Property name',
           align: 'start',
           sortable: false,
-          value: 'name',
+          value: 'name'
         },
         { text: 'Lower bound', value: 'min' },
         { text: 'Measured value', value: 'value' },
         { text: 'Upper bound', value: 'max' },
-        { text: 'Details', value: 'details' },
+        { text: 'Details', value: 'details' }
       ],
-      measurementErrors: [],
+      measurementErrors: []
     }
   },
   computed: {
     isValid() {
-      if(this.fullSchema.contentMediaType === 'application/json') {
-        if(this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && this.fullSchema.validation.hasOwnProperty('type')) {
-          const ajv = new Ajv({allErrors: true})
+      if (this.fullSchema.contentMediaType === 'application/json') {
+        if (this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && Object.prototype.hasOwnProperty.call(this.fullSchema.validation, 'type')) {
+          const ajv = new Ajv({ allErrors: true })
           const validate = ajv.compile(this.fullSchema.validation)
           const isValid = validate(JSON.parse(this.modelWrapper[this.modelKey]))
           return isValid
+        } else {
+          return undefined
         }
+      } else {
+        return undefined
       }
     },
     jsonError() {
-      if(this.fullSchema.contentMediaType === 'application/json') {
-        if(this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && this.fullSchema.validation.hasOwnProperty('type')) {
-          const ajv = new Ajv({allErrors: true})
+      if (this.fullSchema.contentMediaType === 'application/json') {
+        if (this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && Object.prototype.hasOwnProperty.call(this.fullSchema.validation, 'type')) {
+          const ajv = new Ajv({ allErrors: true })
           const validate = ajv.compile(this.fullSchema.validation)
           const isValid = validate(JSON.parse(this.modelWrapper[this.modelKey]))
           const inputData = JSON.parse(this.modelWrapper[this.modelKey])
-          if(isValid) { 
+          if (isValid) {
             return undefined
           } else {
             let msg = ''
             let nMsg = 1
-            for(const err in validate.errors) {
-              let dP = validate.errors[err].dataPath
-              // console.log('row:', dP.split('.').join(' '))//validate.errors[err].datapath.split('.').join(' '))
-              // let minStr = String.toSchemaString(dP) +'.minimum'
-              // let maxStr = String.toSchemaString(dP)+'.maximum'
-              // console.log('min: ', Object.byString(this.fullSchema.validation,minStr))
-              // console.log('path:', validate.errors[err].dataPath)
-              // console.log('max: ', Object.byString(this.fullSchema.validation,maxStr))
-              // console.log('details: ', JSON.stringify(validate.errors[err].message))
-              this.measurementErrors.push(buildTableRecord(dP,this.fullSchema.validation,inputData,validate.errors[err].message))
-              msg = msg +nMsg+' - ' +JSON.stringify(validate.errors[err].schemaPath) + JSON.stringify(validate.errors[err].message) + '<br>'
+            for (const err in validate.errors) {
+              const dP = validate.errors[err].dataPath
+              this.measurementErrors.push(buildTableRecord(dP, this.fullSchema.validation, inputData, validate.errors[err].message))
+              msg = msg + nMsg + ' - ' + JSON.stringify(validate.errors[err].schemaPath) + JSON.stringify(validate.errors[err].message) + '<br>'
               nMsg++
             }
             return msg
           }
-        }
-        if(this.fullSchema.displayTable !== null && this.fullSchema.displayTable !== undefined && this.fullSchema.displayTable.hasOwnProperty('validation')) {
+        } else if (this.fullSchema.displayTable !== null && this.fullSchema.displayTable !== undefined && Object.prototype.hasOwnProperty.call(this.fullSchema.displayTable, 'validation')) {
           // parse the validation object
-          for(let row in this.fullSchema.displayTable.validation) {
-            let curRec = this.fullSchema.displayTable.validation[row];
-            let dP = curRec.path
+          for (const row in this.fullSchema.displayTable.validation) {
+            const curRec = this.fullSchema.displayTable.validation[row]
+            const dP = curRec.path
             this.measurementErrors.push({
               name: row,
               min: curRec.rules.minimum,
               max: curRec.rules.maximum,
-              value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]),dP).toFixed(5)
+              value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]), dP).toFixed(5)
             })
           }
         }
       }
+      return undefined
     },
     fullSchema() {
       return schemaUtils.prepareFullSchema(this.schema, this.modelWrapper, this.modelKey)
@@ -1034,23 +1016,23 @@ export default {
   },
   methods: {
     getColor(tableRecord) {
-      if(tableRecord.value > tableRecord.max || tableRecord.value < tableRecord.min) {
+      if (tableRecord.value > tableRecord.max || tableRecord.value < tableRecord.min) {
         return 'red'
       } else {
-        return "#81c784"
+        return '#81c784'
       }
     },
-    downloadFile(event){
-      const durl = window.URL.createObjectURL(new Blob([this.modelWrapper[this.modelKey]]));
-      const link = document.createElement('a');
-      link.href = durl;
-      link.setAttribute('download', 'report_'+this.modelKey+'.json'); // or any other extension
-      document.body.appendChild(link);
-      link.click();
+    downloadFile(event) {
+      const durl = window.URL.createObjectURL(new Blob([this.modelWrapper[this.modelKey]]))
+      const link = document.createElement('a')
+      link.href = durl
+      link.setAttribute('download', 'report_' + this.modelKey + '.json') // or any other extension
+      document.body.appendChild(link)
+      link.click()
     },
     viewFile(event) {
-      var tab = window.open('data:text/json,' + encodeURIComponent(this.modelWrapper[this.modelKey]),'_blank')
-      tab.document.close(); // to finish loading the page
+      var tab = window.open('data:text/json,' + encodeURIComponent(this.modelWrapper[this.modelKey]), '_blank')
+      tab.document.close() // to finish loading the page
     },
     changeFile(event) {
       this.updateSelectItems()
@@ -1059,10 +1041,10 @@ export default {
         var reader = new FileReader()
         reader.onload = (e) => {
           this.modelWrapper[this.modelKey] = e.target.result
-          if(this.fullSchema.contentMediaType === 'application/json') {
-            if(this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && this.fullSchema.validation.hasOwnProperty('type')) {
+          if (this.fullSchema.contentMediaType === 'application/json') {
+            if (this.fullSchema.validation !== null && this.fullSchema.validation !== undefined && Object.prototype.hasOwnProperty.call(this.fullSchema.validation, 'type')) {
               this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: JSON.parse(this.modelWrapper[this.modelKey]), validate: true })
-            } else { this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: JSON.parse(this.modelWrapper[this.modelKey]), validate: false })}
+            } else { this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: JSON.parse(this.modelWrapper[this.modelKey]), validate: false }) }
           } else {
             this.$emit('change', { key: this.fullKey.replace(/allOf-([0-9]+)\./g, ''), model: this.modelWrapper[this.modelKey] })
           }
