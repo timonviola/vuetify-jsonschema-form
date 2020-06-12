@@ -1098,12 +1098,9 @@ export default {
         }
         reader.readAsText(input.files[0])
       }
-      console.log('updateselectItems')
       if (Object.prototype.hasOwnProperty.call(this.fullSchema, 'displayTable')) {
         // reset table contents to empty
-        console.log('this.measurementErrors', this.measurementErrors)
         this.measurementErrors.length = 0
-        console.log('this.measurementErrors reset:', this.measurementErrors)
       }
     },
     changeImage(event) {
