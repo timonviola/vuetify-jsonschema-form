@@ -413,7 +413,7 @@
             dense
             :headers="headers"
             :items="tableContents"
-            :items-per-page="5"
+            :items-per-page="-1"
             class="elevation-1"
           >
             <template
@@ -889,7 +889,7 @@ export default {
         { text: 'Details', value: 'details' }
       ],
       measurementErrors: [],
-      displayTableError: [],
+      displayTableError: []
     }
   },
   computed: {
@@ -1100,7 +1100,7 @@ export default {
         reader.readAsText(input.files[0])
       }
       // todo: remove display table error on refresh
-      this.displayTableError = null;
+      this.displayTableError = null
       if (Object.prototype.hasOwnProperty.call(this.fullSchema, 'displayTable')) {
         // reset table contents to empty
         this.measurementErrors.length = 0
