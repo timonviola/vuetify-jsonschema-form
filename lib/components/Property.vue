@@ -393,7 +393,7 @@
             mdi-open-in-new
           </v-icon>
           <v-container
-            v-if="displayTableError"
+            v-if="displayTableError !== null && displayTableError.length >= 1"
             fluid
             class="pa-0 ma-0"
           >
@@ -889,7 +889,7 @@ export default {
         { text: 'Details', value: 'details' }
       ],
       measurementErrors: [],
-      displayTableError: null
+      displayTableError: [],
     }
   },
   computed: {
@@ -915,6 +915,7 @@ export default {
         return []
       }
       const tArr = []
+      this.displayTableError = []
       for (const row in this.fullSchema.displayTable.validation) {
         const curRec = this.fullSchema.displayTable.validation[row]
         const dP = curRec.path
@@ -1098,6 +1099,8 @@ export default {
         }
         reader.readAsText(input.files[0])
       }
+      // todo: remove display table error on refresh
+      this.displayTableError = null;
       if (Object.prototype.hasOwnProperty.call(this.fullSchema, 'displayTable')) {
         // reset table contents to empty
         this.measurementErrors.length = 0
