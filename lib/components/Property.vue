@@ -321,13 +321,14 @@
       </v-text-field>
 
       <!-- Simple image field -->
-      <div v-else-if="fullSchema.type === 'image'">
-        <div class="file-upload-form">
-          <span v-if="fullSchema.title">{{ fullSchema.title }}</span><span v-else>Upload an image file:</span>
+      <div v-else-if="fullSchema.type === 'image'" >
+        <div class="file-upload-form" style="text-align:center;">
+          <span style="display:inherit;" v-if="fullSchema.title">{{ fullSchema.title }}</span><span style="display:inherit;" v-else>Upload an image file:</span>
           <input
             type="file"
             accept="image/*"
             @change="changeImage"
+            style="background:#f1f1f4;height:100px;border:#aeaea1;border-style:dashed;border-radius:5pt;"
           >
           <tooltip slot="append-outer" :options="options" :html-description="htmlDescription" />
         </div>
