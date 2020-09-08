@@ -333,6 +333,7 @@ This description can be a long text with markdown content.
               rules: {
                 maximum: 1,
                 minimum: 0,
+                precision: 10,
                 type: ['float,integer']
               }
             },

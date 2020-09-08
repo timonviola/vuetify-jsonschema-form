@@ -920,12 +920,16 @@ export default {
       for (const row in this.fullSchema.displayTable.validation) {
         const curRec = this.fullSchema.displayTable.validation[row]
         const dP = curRec.path
+        var precision = curRec.rules.precision;
+        if(precision=== undefined || precision=== null) {
+          var precision = 5;
+        }
         try {
           tArr.push({
             name: row,
             min: curRec.rules.minimum,
             max: curRec.rules.maximum,
-            value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]), dP).toFixed(5)
+            value: Object.byString(JSON.parse(this.modelWrapper[this.modelKey]), dP).toFixed(precision)
           })
         } catch (e) {
           this.displayTableError = row + ' ' + curRec.path
